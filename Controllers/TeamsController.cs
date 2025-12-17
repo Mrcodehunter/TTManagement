@@ -7,7 +7,7 @@ namespace TTManagement.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Roles = "Admin")]
+[Authorize]
 public class TeamsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -25,6 +25,7 @@ public class TeamsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create(CreateTeamCommand command)
     {
         var id = await _mediator.Send(command);
@@ -32,6 +33,7 @@ public class TeamsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(int id, UpdateTeamCommand command)
     {
         if (id != command.Id) return BadRequest("Id mismatch");
@@ -41,6 +43,7 @@ public class TeamsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _mediator.Send(new DeleteTeamCommand(id));
