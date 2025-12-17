@@ -31,6 +31,8 @@ A comprehensive Task and Team Management System built with .NET 8 Web API. This 
 
 ## 🏁 Getting Started
 
+***Pull master branch***
+
 ### 1. Start the Database
 Run the following command to start a SQL Server container in Docker:
 
