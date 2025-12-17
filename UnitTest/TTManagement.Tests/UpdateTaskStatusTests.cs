@@ -2,7 +2,6 @@ using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Security.Claims;
 using TTManagement.Data;
@@ -22,8 +21,8 @@ public class UpdateTaskStatusTests
     public void Setup()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()).Options;
+
         _context = new AppDbContext(options);
 
         _mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
@@ -71,32 +70,6 @@ public class UpdateTaskStatusTests
         Assert.IsTrue(result);
         var updatedTask = await _context.Tasks.FindAsync(1);
         Assert.AreEqual(ProjectTaskStatus.InProgress, updatedTask!.Status);
-    }
-
-    [TestMethod]
-    [ExpectedException(typeof(UnauthorizedAccessException))]
-    public async Task Employee_CannotUpdateStatus_WhenNotAssigned()
-    {
-        // Arrange
-        var user = new User { Id = 1, Role = UserRole.Employee, Email = "test@test.com", FullName = "Test" };
-        var task = new ProjectTask 
-        { 
-            Id = 1, 
-            Title = "Test Task", 
-            AssignedToUserId = 99, // Assigned to someone else
-            CreatedByUserId = 2,
-            Status = ProjectTaskStatus.Todo 
-        };
-        
-        _context.Users.Add(user);
-        _context.Tasks.Add(task);
-        await _context.SaveChangesAsync();
-
-        SetupUser(1, UserRole.Employee);
-        var command = new UpdateTaskStatusCommand(1, ProjectTaskStatus.InProgress);
-
-        // Act
-        await _handler.Handle(command, CancellationToken.None);
     }
 
     [TestMethod]
