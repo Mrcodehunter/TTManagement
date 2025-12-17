@@ -44,6 +44,7 @@ public class TasksController : ControllerBase
     }
 
     [HttpPatch("{id}/status")]
+    [Authorize(Roles = "Employee,Manager,Admin")]
     public async Task<IActionResult> UpdateStatus(int id, [FromBody] ProjectTaskStatus status)
     {
         var command = new UpdateTaskStatusCommand(id, status);

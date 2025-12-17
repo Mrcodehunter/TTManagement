@@ -8,6 +8,7 @@ using TTManagement.Middleware;
 using FluentValidation;
 using MediatR;
 using Microsoft.OpenApi.Models;
+using System.Security.Claims; // Added namespace for ClaimTypes
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -81,7 +82,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtSettings["Issuer"],
             ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(key)
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            RoleClaimType = ClaimTypes.Role 
         };
     });
 

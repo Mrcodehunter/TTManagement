@@ -2,6 +2,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using TTManagement.Data;
 using TTManagement.DTOs;
 using TTManagement.Entities;
@@ -23,11 +24,13 @@ public class GetTasksHandler : IRequestHandler<GetTasksQuery, PagedResult<Projec
 {
     private readonly AppDbContext _context;
     private readonly IMapper _mapper;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public GetTasksHandler(AppDbContext context, IMapper mapper)
+    public GetTasksHandler(AppDbContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor)
     {
         _context = context;
         _mapper = mapper;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<PagedResult<ProjectTaskDto>> Handle(GetTasksQuery request, CancellationToken cancellationToken)
@@ -36,9 +39,25 @@ public class GetTasksHandler : IRequestHandler<GetTasksQuery, PagedResult<Projec
             .AsNoTracking()
             .AsQueryable();
 
+        var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier);
+        var roleClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Role);
+
+        if (userIdClaim != null && roleClaim != null)
+        {
+            var userId = int.Parse(userIdClaim.Value);
+            var role = Enum.Parse<UserRole>(roleClaim.Value);
+
+            // Employee can ONLY view tasks assigned to them
+            if (role == UserRole.Employee)
+            {
+                query = query.Where(t => t.AssignedToUserId == userId);
+            }
+        }
+
         if (request.Status.HasValue)
             query = query.Where(t => t.Status == request.Status.Value);
         
+        // Allow filters if they are not conflicting with role restrictions (e.g. Manager filtering by user)
         if (request.AssignedToUserId.HasValue)
             query = query.Where(t => t.AssignedToUserId == request.AssignedToUserId.Value);
 
@@ -74,4 +93,3 @@ public class GetTasksHandler : IRequestHandler<GetTasksQuery, PagedResult<Projec
         };
     }
 }
-
