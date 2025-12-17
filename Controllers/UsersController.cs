@@ -7,7 +7,7 @@ namespace TTManagement.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,Manager,Employee")]
 public class UsersController : ControllerBase
 {
     private readonly IMediator _mediator;
